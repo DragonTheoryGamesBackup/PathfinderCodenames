@@ -94,16 +94,50 @@ public class GameManager : MonoBehaviour {
                                                             "Licktoads",                                                                 "Use Magic Device",
                                                             "Black Marquis",                                                             "Wisdom"
     };
+
     [SerializeField] List<string> cluesText;
     [SerializeField] GameObject[] clueObjects;
+    [SerializeField] int gameStep;
+    GameObject Button;
 
+    [SerializeField] int team1TotalCards = 9;
+    [SerializeField] int team1Cards = 0;
+    string team1Tag = "Pathfinder Society";
+    [SerializeField] GameObject Team1Text;
+    [SerializeField] int team1Score = 0;
+
+    [SerializeField] int team2TotalCards = 8;
+    [SerializeField] int team2Cards = 0;
+    string team2Tag = "Aspis Consortium";
+    [SerializeField] GameObject Team2Text;
+    [SerializeField] int team2Score = 0;
+
+    [SerializeField] int assassinTeamCards = 0;
+
+    private enum TurnOrder { firstTeamSelect, secondTeamSelect, assassinSelect, firstTeamTurn, secondTeamTurn };
+    //Game Steps
+    //"Pathfinder Select"
+    //"Aspis Consortium Select"
+    //"Red Mantis Select"
+    //"Pathfinder Turn"
+    //"Aspis Turn"
     
+
 
     // Start is called before the first frame update
     void Start()
     {
-        cluesText = new List<string>(cluesTextOriginal);
+        gameStep = (int)TurnOrder.firstTeamSelect;
+        
+        cluesText = new List<string>(cluesTextOriginal); //create copy of all the clue cards so that originals are not altered
         PopulateCards();
+    }
+
+    private void Update() {
+        team1Score = team1TotalCards - team1Cards;
+        team2Score = team2TotalCards - team2Cards;
+        Team1Text.GetComponent<TextMeshProUGUI>().text = team1Score.ToString();
+        Team2Text.GetComponent<TextMeshProUGUI>().text = team2Score.ToString();
     }
 
     public void StartGame() {
@@ -114,7 +148,58 @@ public class GameManager : MonoBehaviour {
         Application.Quit();
     }
 
+    public void Buttons(GameObject button) {
+        if (gameStep == 0) {
+            if (button.tag == "ClueCard" && team1Cards < team1TotalCards) {
+                button.GetComponent<Image>().color = Color.green;
+                button.tag = team1Tag;
+                team1Cards += 1;
+            }
+            else if (button.tag == team1Tag) {
+                button.GetComponent<Image>().color = Color.white;
+                button.tag = "ClueCard";
+                team1Cards -= 1;
 
+            }
+        }
+        else if (gameStep == 1) {
+            if (button.tag == "ClueCard" && team2Cards < team2TotalCards) {
+                button.GetComponent<Image>().color = Color.gray;
+                button.tag = team2Tag;
+                team2Cards += 1;
+            }
+            else if (button.tag == team2Tag) {
+                button.GetComponent<Image>().color = Color.white;
+                button.tag = "ClueCard";
+                team2Cards -= 1;
+
+            }
+        }
+        else if (gameStep == 2) {
+            if (button.tag == "ClueCard" && assassinTeamCards < 1) {
+                button.GetComponent<Image>().color = Color.red;
+                button.tag = "Assassin";
+                assassinTeamCards += 1;
+            }
+            else if (button.tag == "Assassin") {
+                button.GetComponent<Image>().color = Color.white;
+                button.tag = "ClueCard";
+                assassinTeamCards -= 1;
+
+            }
+        }
+    }
+
+    public void TurnButtons(int direction) {
+        if (gameStep <= 2 && gameStep >= 0) {
+            gameStep += direction;
+        }
+        
+    }
+
+    /// <summary>
+    /// Create Random text on all of the cards.
+    /// </summary>
     void PopulateCards() {
         foreach (GameObject clue in clueObjects) {
             int randomCard = Random.Range(0, cluesText.Count);
