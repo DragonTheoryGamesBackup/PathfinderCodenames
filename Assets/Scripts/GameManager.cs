@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System;
 
 public class GameManager : MonoBehaviour {
 
@@ -99,6 +100,8 @@ public class GameManager : MonoBehaviour {
     [SerializeField] GameObject[] clueObjects;
     [SerializeField] int gameStep;
     GameObject Button;
+    [SerializeField] GameObject InfoTextBox;
+    string infoText;
 
     [SerializeField] int team1TotalCards = 9;
     [SerializeField] int team1Cards = 0;
@@ -113,6 +116,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] int team2Score = 0;
 
     [SerializeField] int assassinTeamCards = 0;
+    string gameWinner;
 
     private enum TurnOrder { firstTeamSelect, secondTeamSelect, assassinSelect, firstTeamTurn, secondTeamTurn };
     //Game Steps
@@ -130,7 +134,6 @@ public class GameManager : MonoBehaviour {
         gameStep = (int)TurnOrder.firstTeamSelect;
         
         cluesText = new List<string>(cluesTextOriginal); //create copy of all the clue cards so that originals are not altered
-        PopulateCards();
     }
 
     private void Update() {
@@ -138,7 +141,10 @@ public class GameManager : MonoBehaviour {
         team2Score = team2TotalCards - team2Cards;
         Team1Text.GetComponent<TextMeshProUGUI>().text = team1Score.ToString();
         Team2Text.GetComponent<TextMeshProUGUI>().text = team2Score.ToString();
+        InfoTextBox.GetComponent<TextMeshProUGUI>().text = infoText;
+        InfoText();
     }
+
 
     public void StartGame() {
         SceneManager.LoadScene("GameScene");
@@ -148,7 +154,31 @@ public class GameManager : MonoBehaviour {
         Application.Quit();
     }
 
+    private void InfoText() {
+        switch (gameStep) {
+            case 0:
+                infoText = "Pathfinders, select your 9 spaces.  Don't let the players see!";
+                break;
+            case 1:
+                infoText = "Aspis, select your 8 spaces.  Don't let the players see!";
+                break;
+            case 2:
+                infoText = "Place the Assassin Card.  Don't let the players see!";
+                break;
+            case 3:
+                infoText = "Pathfinder's Turn.";
+                break;
+            case 4:
+                infoText = "Aspis Consortium's Turn";
+                break;
+            case 5:
+                infoText = gameWinner + " win!";
+                break;
+        }
+    }
+
     public void Buttons(GameObject button) {
+        // Team 1 selection turn
         if (gameStep == 0) {
             if (button.tag == "ClueCard" && team1Cards < team1TotalCards) {
                 button.GetComponent<Image>().color = Color.green;
@@ -162,6 +192,7 @@ public class GameManager : MonoBehaviour {
 
             }
         }
+        // Team 2 Selection Turn
         else if (gameStep == 1) {
             if (button.tag == "ClueCard" && team2Cards < team2TotalCards) {
                 button.GetComponent<Image>().color = Color.gray;
@@ -175,6 +206,7 @@ public class GameManager : MonoBehaviour {
 
             }
         }
+        // Assassin Selection Turn
         else if (gameStep == 2) {
             if (button.tag == "ClueCard" && assassinTeamCards < 1) {
                 button.GetComponent<Image>().color = Color.red;
@@ -188,13 +220,90 @@ public class GameManager : MonoBehaviour {
 
             }
         }
+        // Team 1 Turn
+        else if (gameStep == 3) {
+            if (button.tag == team1Tag) {
+                button.tag = "tagged";
+                button.GetComponent<Image>().color = Color.green;
+                team1Cards += 1;
+                if (team1Cards >= 9) {
+                    GameOver("Pathfinders");
+                }
+            }
+            else if (button.tag == team2Tag) {
+                button.tag = "tagged";
+                button.GetComponent<Image>().color = Color.gray;
+                team2Cards += 1;
+                gameStep += 1;
+            }
+            else if (button.tag == "Assassin") {
+                button.tag = "tagged";
+                button.GetComponent<Image>().color = Color.red;
+                assassinTeamCards += 1;
+                GameOver("Aspis Consortium");
+            }
+
+            else if (button.tag == "ClueCard") {
+                gameStep += 1;
+            }
+        }
+        // Team 2 Turn
+        else if (gameStep == 4) {
+            if (button.tag == team1Tag) {
+                button.tag = "tagged";
+                button.GetComponent<Image>().color = Color.green;
+                team1Cards += 1;
+                gameStep -= 1;
+            }
+            else if (button.tag == team2Tag) {
+                button.tag = "tagged";
+                button.GetComponent<Image>().color = Color.gray;
+                team2Cards += 1;
+                if (team2Cards >= 8) {
+                    GameOver("Aspis Consortium");
+                }
+            }
+            else if (button.tag == "Assassin") {
+                button.tag = "tagged";
+                button.GetComponent<Image>().color = Color.red;
+                assassinTeamCards += 1;
+                GameOver("Pathfinders");
+            }
+            else if (button.tag == "ClueCard") {
+                gameStep -= 1;
+            }
+        }
+    }
+
+    private void GameOver(string winner) {
+        gameWinner = winner;
+        gameStep = 5;
     }
 
     public void TurnButtons(int direction) {
-        if (gameStep <= 2 && gameStep >= 0) {
-            gameStep += direction;
-        }
-        
+        gameStep += direction;
+        gameStep = (gameStep <0 ? 0 : gameStep >2 ? 2: gameStep);
+    }
+
+    public void RollInitiative(GameObject InitButton) {
+        GameObject[] deleteMe;
+        if (team1Cards >= 9 && team2Cards >= 8 && assassinTeamCards >= 1) {
+            foreach (GameObject clue in clueObjects) {
+                clue.GetComponent<Image>().color = Color.white;
+            }
+            team1Cards = 0;
+            team2Cards = 0;
+            gameStep = 3;
+            PopulateCards();
+            deleteMe = GameObject.FindGameObjectsWithTag("SelectionButton");
+            foreach (GameObject obj in deleteMe) {
+                Destroy(obj);
+            }
+        }  
+    }
+
+    public void EndTurn() {
+        gameStep = (gameStep == 3 ? 4 : gameStep == 4 ? 3 : 3);
     }
 
     /// <summary>
@@ -202,9 +311,10 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     void PopulateCards() {
         foreach (GameObject clue in clueObjects) {
-            int randomCard = Random.Range(0, cluesText.Count);
+            int randomCard = UnityEngine.Random.Range(0, cluesText.Count);
             clue.GetComponentInChildren<TMP_Text>().text = cluesText[randomCard];
             cluesText.RemoveAt(randomCard);
         }
     }
+
 }

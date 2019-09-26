@@ -8,6 +8,7 @@ TagManager:
   - Pathfinder Society
   - Aspis Consortium
   - Assassin
+  - SelectionButton
   layers:
   - Default
   - TransparentFX
