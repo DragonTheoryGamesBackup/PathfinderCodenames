@@ -9,6 +9,8 @@ TagManager:
   - Aspis Consortium
   - Assassin
   - SelectionButton
+  - tagged
+  - MenuButton
   layers:
   - Default
   - TransparentFX

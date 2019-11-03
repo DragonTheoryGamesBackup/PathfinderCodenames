@@ -96,23 +96,23 @@ public class GameManager : MonoBehaviour {
                                                             "Black Marquis",                                                             "Wisdom"
     };
 
-    [SerializeField] List<string> cluesText;
-    [SerializeField] GameObject[] clueObjects;
-    [SerializeField] int gameStep;
-    GameObject Button;
-    [SerializeField] GameObject InfoTextBox;
-    string infoText;
+    [SerializeField] List<string> cluesText = null;
+    [SerializeField] GameObject[] clueObjects = null;
+    [SerializeField] int gameStep = 0;
+    GameObject Button = null;
+    [SerializeField] GameObject InfoTextBox = null;
+    string infoText = null;
 
     [SerializeField] int team1TotalCards = 9;
     [SerializeField] int team1Cards = 0;
     string team1Tag = "Pathfinder Society";
-    [SerializeField] GameObject Team1Text;
+    [SerializeField] GameObject Team1Text = null;
     [SerializeField] int team1Score = 0;
 
     [SerializeField] int team2TotalCards = 8;
     [SerializeField] int team2Cards = 0;
     string team2Tag = "Aspis Consortium";
-    [SerializeField] GameObject Team2Text;
+    [SerializeField] GameObject Team2Text = null;
     [SerializeField] int team2Score = 0;
 
     [SerializeField] int assassinTeamCards = 0;
@@ -126,6 +126,9 @@ public class GameManager : MonoBehaviour {
     //"Pathfinder Turn"
     //"Aspis Turn"
     
+
+   
+
 
 
     // Start is called before the first frame update
@@ -143,15 +146,6 @@ public class GameManager : MonoBehaviour {
         Team2Text.GetComponent<TextMeshProUGUI>().text = team2Score.ToString();
         InfoTextBox.GetComponent<TextMeshProUGUI>().text = infoText;
         InfoText();
-    }
-
-
-    public void StartGame() {
-        SceneManager.LoadScene("GameScene");
-    }
-
-    public void QuitGame() {
-        Application.Quit();
     }
 
     private void InfoText() {
@@ -316,5 +310,4 @@ public class GameManager : MonoBehaviour {
             cluesText.RemoveAt(randomCard);
         }
     }
-
 }
