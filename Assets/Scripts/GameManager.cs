@@ -8,6 +8,8 @@ using System;
 
 public class GameManager : MonoBehaviour {
 
+    [SerializeField] GameObject permascript;
+
     [SerializeField] List<string> cluesTextOriginal = new List<string> {
      //  Places                       Monsters              Peoples               Things                          Spells                 Ideas      
 
@@ -103,6 +105,13 @@ public class GameManager : MonoBehaviour {
     [SerializeField] GameObject InfoTextBox = null;
     string infoText = null;
 
+    [SerializeField] Sprite pathfinderImage;
+    [SerializeField] Sprite aspisImage;
+    [SerializeField] Sprite mantisImage;
+    [SerializeField] Sprite BlankImage;
+    [SerializeField] Sprite team1Image;
+    [SerializeField] Sprite team2Image;
+
     [SerializeField] int team1TotalCards = 9;
     [SerializeField] int team1Cards = 0;
     string team1Tag = "Pathfinder Society";
@@ -134,8 +143,9 @@ public class GameManager : MonoBehaviour {
     // Start is called before the first frame update
     void Start()
     {
+        permascript = GameObject.Find("_PermaSript");
+        SetTeams();
         gameStep = (int)TurnOrder.firstTeamSelect;
-        
         cluesText = new List<string>(cluesTextOriginal); //create copy of all the clue cards so that originals are not altered
     }
 
@@ -146,6 +156,23 @@ public class GameManager : MonoBehaviour {
         Team2Text.GetComponent<TextMeshProUGUI>().text = team2Score.ToString();
         InfoTextBox.GetComponent<TextMeshProUGUI>().text = infoText;
         InfoText();
+    }
+
+    private void SetTeams() {
+        int firstCaptain = permascript.GetComponent<Permiscript>().getCaptain();
+        Debug.Log(firstCaptain);
+        if (firstCaptain == 0) {
+            team1Tag = "Pathfinder Society";
+            team1Image = pathfinderImage;
+            team2Tag = "Aspis Consortium";
+            team2Image = aspisImage;
+        }
+        else if (firstCaptain == 1){
+            team1Tag = "Aspis Consortium";
+            team1Image = aspisImage;
+            team2Tag = "Pathfinder Society";
+            team2Image = pathfinderImage;
+        }
     }
 
     private void InfoText() {
@@ -175,12 +202,12 @@ public class GameManager : MonoBehaviour {
         // Team 1 selection turn
         if (gameStep == 0) {
             if (button.tag == "ClueCard" && team1Cards < team1TotalCards) {
-                button.GetComponent<Image>().color = Color.green;
+                button.GetComponent<Image>().sprite = team1Image;
                 button.tag = team1Tag;
                 team1Cards += 1;
             }
             else if (button.tag == team1Tag) {
-                button.GetComponent<Image>().color = Color.white;
+                button.GetComponent<Image>().sprite = BlankImage;
                 button.tag = "ClueCard";
                 team1Cards -= 1;
 
@@ -189,12 +216,12 @@ public class GameManager : MonoBehaviour {
         // Team 2 Selection Turn
         else if (gameStep == 1) {
             if (button.tag == "ClueCard" && team2Cards < team2TotalCards) {
-                button.GetComponent<Image>().color = Color.gray;
+                button.GetComponent<Image>().sprite = team2Image;
                 button.tag = team2Tag;
                 team2Cards += 1;
             }
             else if (button.tag == team2Tag) {
-                button.GetComponent<Image>().color = Color.white;
+                button.GetComponent<Image>().sprite = BlankImage;
                 button.tag = "ClueCard";
                 team2Cards -= 1;
 
@@ -203,12 +230,12 @@ public class GameManager : MonoBehaviour {
         // Assassin Selection Turn
         else if (gameStep == 2) {
             if (button.tag == "ClueCard" && assassinTeamCards < 1) {
-                button.GetComponent<Image>().color = Color.red;
+                button.GetComponent<Image>().sprite = mantisImage;
                 button.tag = "Assassin";
                 assassinTeamCards += 1;
             }
             else if (button.tag == "Assassin") {
-                button.GetComponent<Image>().color = Color.white;
+                button.GetComponent<Image>().sprite = BlankImage;
                 button.tag = "ClueCard";
                 assassinTeamCards -= 1;
 
@@ -218,7 +245,8 @@ public class GameManager : MonoBehaviour {
         else if (gameStep == 3) {
             if (button.tag == team1Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().color = Color.green;
+                button.GetComponent<Image>().sprite = team1Image;
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 team1Cards += 1;
                 if (team1Cards >= 9) {
                     GameOver("Pathfinders");
@@ -226,18 +254,21 @@ public class GameManager : MonoBehaviour {
             }
             else if (button.tag == team2Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().color = Color.gray;
+                button.GetComponent<Image>().sprite = team2Image;
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 team2Cards += 1;
                 gameStep += 1;
             }
             else if (button.tag == "Assassin") {
                 button.tag = "tagged";
-                button.GetComponent<Image>().color = Color.red;
+                button.GetComponent<Image>().sprite = mantisImage;
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 assassinTeamCards += 1;
                 GameOver("Aspis Consortium");
             }
 
             else if (button.tag == "ClueCard") {
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 gameStep += 1;
             }
         }
@@ -245,13 +276,15 @@ public class GameManager : MonoBehaviour {
         else if (gameStep == 4) {
             if (button.tag == team1Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().color = Color.green;
+                button.GetComponent<Image>().sprite = team1Image;
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 team1Cards += 1;
                 gameStep -= 1;
             }
             else if (button.tag == team2Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().color = Color.gray;
+                button.GetComponent<Image>().sprite = team2Image;
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 team2Cards += 1;
                 if (team2Cards >= 8) {
                     GameOver("Aspis Consortium");
@@ -259,11 +292,13 @@ public class GameManager : MonoBehaviour {
             }
             else if (button.tag == "Assassin") {
                 button.tag = "tagged";
-                button.GetComponent<Image>().color = Color.red;
+                button.GetComponent<Image>().sprite = mantisImage;
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 assassinTeamCards += 1;
                 GameOver("Pathfinders");
             }
             else if (button.tag == "ClueCard") {
+                button.GetComponentInChildren<TMP_Text>().text = "";
                 gameStep -= 1;
             }
         }
@@ -283,7 +318,7 @@ public class GameManager : MonoBehaviour {
         GameObject[] deleteMe;
         if (team1Cards >= 9 && team2Cards >= 8 && assassinTeamCards >= 1) {
             foreach (GameObject clue in clueObjects) {
-                clue.GetComponent<Image>().color = Color.white;
+                clue.GetComponent<Image>().sprite = BlankImage;
             }
             team1Cards = 0;
             team2Cards = 0;
