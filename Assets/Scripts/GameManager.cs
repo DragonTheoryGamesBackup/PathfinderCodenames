@@ -8,7 +8,6 @@ using System;
 
 public class GameManager : MonoBehaviour {
 
-    [SerializeField] GameObject permascript;
 
     [SerializeField] List<string> cluesTextOriginal = new List<string> {
      //  Places                       Monsters              Peoples               Things                          Spells                 Ideas      
@@ -100,10 +99,14 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] List<string> cluesText = null;
     [SerializeField] GameObject[] clueObjects = null;
+
+    [Header("Game Step")]
     [SerializeField] int gameStep = 0;
+
     GameObject Button = null;
     [SerializeField] GameObject InfoTextBox = null;
     string infoText = null;
+
 
     [SerializeField] Sprite pathfinderImage;
     [SerializeField] Sprite aspisImage;
@@ -143,7 +146,6 @@ public class GameManager : MonoBehaviour {
     // Start is called before the first frame update
     void Start()
     {
-        permascript = GameObject.Find("_PermaSript");
         SetTeams();
         gameStep = (int)TurnOrder.firstTeamSelect;
         cluesText = new List<string>(cluesTextOriginal); //create copy of all the clue cards so that originals are not altered
@@ -159,7 +161,7 @@ public class GameManager : MonoBehaviour {
     }
 
     private void SetTeams() {
-        int firstCaptain = permascript.GetComponent<Permiscript>().getCaptain();
+        int firstCaptain = Permiscript.Instance.getCaptain();
         Debug.Log(firstCaptain);
         if (firstCaptain == 0) {
             team1Tag = "Pathfinder Society";
@@ -178,10 +180,10 @@ public class GameManager : MonoBehaviour {
     private void InfoText() {
         switch (gameStep) {
             case 0:
-                infoText = "Pathfinders, select your 9 spaces.  Don't let the players see!";
+                infoText = "PATHFINDERS, SELECT YOUR SPACES. DON'T LET THE PLAYERS SEE!";
                 break;
             case 1:
-                infoText = "Aspis, select your 8 spaces.  Don't let the players see!";
+                infoText = "Aspis, select your spaces.  Don't let the players see!";
                 break;
             case 2:
                 infoText = "Place the Assassin Card.  Don't let the players see!";
@@ -196,6 +198,7 @@ public class GameManager : MonoBehaviour {
                 infoText = gameWinner + " win!";
                 break;
         }
+        infoText = infoText.ToUpper();
     }
 
     public void Buttons(GameObject button) {
@@ -314,7 +317,7 @@ public class GameManager : MonoBehaviour {
         gameStep = (gameStep <0 ? 0 : gameStep >2 ? 2: gameStep);
     }
 
-    public void RollInitiative(GameObject InitButton) {
+    public void RollInitiative() {
         GameObject[] deleteMe;
         if (team1Cards >= 9 && team2Cards >= 8 && assassinTeamCards >= 1) {
             foreach (GameObject clue in clueObjects) {
