@@ -107,6 +107,9 @@ public class GameManager : MonoBehaviour {
     [SerializeField] GameObject InfoTextBox = null;
     string infoText = null;
 
+    [SerializeField] GameObject team1Icon;
+    [SerializeField] GameObject team2Icon;
+    [SerializeField] GameObject AssassinsIcon;
 
     [SerializeField] Sprite pathfinderImage;
     [SerializeField] Sprite aspisImage;
@@ -129,18 +132,9 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] int assassinTeamCards = 0;
     string gameWinner;
+    [SerializeField] GameObject GameOverScreen;
 
     private enum TurnOrder { firstTeamSelect, secondTeamSelect, assassinSelect, firstTeamTurn, secondTeamTurn };
-    //Game Steps
-    //"Pathfinder Select"
-    //"Aspis Consortium Select"
-    //"Red Mantis Select"
-    //"Pathfinder Turn"
-    //"Aspis Turn"
-    
-
-   
-
 
 
     // Start is called before the first frame update
@@ -162,8 +156,7 @@ public class GameManager : MonoBehaviour {
 
     private void SetTeams() {
         int firstCaptain = Permiscript.Instance.getCaptain();
-        Debug.Log(firstCaptain);
-        if (firstCaptain == 0) {
+        if (firstCaptain == 0) { 
             team1Tag = "Pathfinder Society";
             team1Image = pathfinderImage;
             team2Tag = "Aspis Consortium";
@@ -175,6 +168,10 @@ public class GameManager : MonoBehaviour {
             team2Tag = "Pathfinder Society";
             team2Image = pathfinderImage;
         }
+        team1Icon.GetComponent<Image>().sprite = team1Image;
+        team2Icon.GetComponent<Image>().sprite = team2Image;
+        AssassinsIcon.GetComponent<Image>().sprite = mantisImage;
+
     }
 
     private void InfoText() {
@@ -195,7 +192,7 @@ public class GameManager : MonoBehaviour {
                 infoText = "Aspis Consortium's Turn";
                 break;
             case 5:
-                infoText = gameWinner + " win!";
+                infoText = gameWinner + " wins!";
                 break;
         }
         infoText = infoText.ToUpper();
@@ -213,7 +210,6 @@ public class GameManager : MonoBehaviour {
                 button.GetComponent<Image>().sprite = BlankImage;
                 button.tag = "ClueCard";
                 team1Cards -= 1;
-
             }
         }
         // Team 2 Selection Turn
@@ -252,7 +248,7 @@ public class GameManager : MonoBehaviour {
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team1Cards += 1;
                 if (team1Cards >= 9) {
-                    GameOver("Pathfinders");
+                    GameOver("Pathfinder Society");
                 }
             }
             else if (button.tag == team2Tag) {
@@ -310,15 +306,21 @@ public class GameManager : MonoBehaviour {
     private void GameOver(string winner) {
         gameWinner = winner;
         gameStep = 5;
+        GameOverScreen.SetActive(true);
+        GameOverScreen.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = "The " + gameWinner + " Wins!";
     }
 
-    public void TurnButtons(int direction) {
-        gameStep += direction;
-        gameStep = (gameStep <0 ? 0 : gameStep >2 ? 2: gameStep);
+    public void TurnButtons(int newgameStep) {
+        if (gameStep == 0 || gameStep == 1 || gameStep == 2) {
+            gameStep = newgameStep;
+        }
+        else if (gameStep == 3 || gameStep == 4) {
+            gameStep = newgameStep + 3;
+        }
+        
     }
 
     public void RollInitiative() {
-        GameObject[] deleteMe;
         if (team1Cards >= 9 && team2Cards >= 8 && assassinTeamCards >= 1) {
             foreach (GameObject clue in clueObjects) {
                 clue.GetComponent<Image>().sprite = BlankImage;
@@ -327,10 +329,8 @@ public class GameManager : MonoBehaviour {
             team2Cards = 0;
             gameStep = 3;
             PopulateCards();
-            deleteMe = GameObject.FindGameObjectsWithTag("SelectionButton");
-            foreach (GameObject obj in deleteMe) {
-                Destroy(obj);
-            }
+            Destroy(GameObject.FindGameObjectWithTag("SelectionButton"));
+            Destroy(AssassinsIcon);
         }  
     }
 
