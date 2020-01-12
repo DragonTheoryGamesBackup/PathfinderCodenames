@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using System;
 
 public class MenuController : MonoBehaviour {
 
@@ -18,5 +19,6 @@ public class MenuController : MonoBehaviour {
     public void PlayAgain() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
     
 }

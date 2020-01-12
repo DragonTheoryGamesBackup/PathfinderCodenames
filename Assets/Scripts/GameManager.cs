@@ -111,12 +111,12 @@ public class GameManager : MonoBehaviour {
     [SerializeField] GameObject team2Icon;
     [SerializeField] GameObject AssassinsIcon;
 
-    [SerializeField] Sprite pathfinderImage;
-    [SerializeField] Sprite aspisImage;
-    [SerializeField] Sprite mantisImage;
-    [SerializeField] Sprite BlankImage;
-    [SerializeField] Sprite team1Image;
-    [SerializeField] Sprite team2Image;
+    [SerializeField] Texture pathfinderImage;
+    [SerializeField] Texture aspisImage;
+    [SerializeField] Texture mantisImage;
+    [SerializeField] Texture BlankImage;
+    [SerializeField] Texture team1Image;
+    [SerializeField] Texture team2Image;
 
     [SerializeField] int team1TotalCards = 9;
     [SerializeField] int team1Cards = 0;
@@ -133,9 +133,13 @@ public class GameManager : MonoBehaviour {
     [SerializeField] int assassinTeamCards = 0;
     string gameWinner;
     [SerializeField] GameObject GameOverScreen;
+    [SerializeField] GameObject MenuScreen;
+    [SerializeField] GameObject InitativeButton;
+    [SerializeField] GameObject EndTurnButton;
+    [SerializeField] Transform PlayerFire;
 
     private enum TurnOrder { firstTeamSelect, secondTeamSelect, assassinSelect, firstTeamTurn, secondTeamTurn };
-
+    
 
     // Start is called before the first frame update
     void Start()
@@ -152,6 +156,7 @@ public class GameManager : MonoBehaviour {
         Team2Text.GetComponent<TextMeshProUGUI>().text = team2Score.ToString();
         InfoTextBox.GetComponent<TextMeshProUGUI>().text = infoText;
         InfoText();
+        FireLoc(gameStep);
     }
 
     private void SetTeams() {
@@ -162,25 +167,26 @@ public class GameManager : MonoBehaviour {
             team2Tag = "Aspis Consortium";
             team2Image = aspisImage;
         }
-        else if (firstCaptain == 1){
+        else if (firstCaptain == 1) {
             team1Tag = "Aspis Consortium";
             team1Image = aspisImage;
             team2Tag = "Pathfinder Society";
             team2Image = pathfinderImage;
         }
-        team1Icon.GetComponent<Image>().sprite = team1Image;
-        team2Icon.GetComponent<Image>().sprite = team2Image;
-        AssassinsIcon.GetComponent<Image>().sprite = mantisImage;
+        
+        team1Icon.GetComponent<RawImage>().texture = team1Image;
+        team2Icon.GetComponent<RawImage>().texture = team2Image;
+        AssassinsIcon.GetComponent<RawImage>().texture = mantisImage;
 
     }
 
     private void InfoText() {
         switch (gameStep) {
             case 0:
-                infoText = "PATHFINDERS, SELECT YOUR SPACES. DON'T LET THE PLAYERS SEE!";
+                infoText = team1Tag + ", SELECT YOUR SPACES. DON'T LET THE PLAYERS SEE!";
                 break;
             case 1:
-                infoText = "Aspis, select your spaces.  Don't let the players see!";
+                infoText = team2Tag + ", select your spaces.  Don't let the players see!";
                 break;
             case 2:
                 infoText = "Place the Assassin Card.  Don't let the players see!";
@@ -202,12 +208,12 @@ public class GameManager : MonoBehaviour {
         // Team 1 selection turn
         if (gameStep == 0) {
             if (button.tag == "ClueCard" && team1Cards < team1TotalCards) {
-                button.GetComponent<Image>().sprite = team1Image;
+                button.GetComponent<RawImage>().texture = team1Image;
                 button.tag = team1Tag;
                 team1Cards += 1;
             }
             else if (button.tag == team1Tag) {
-                button.GetComponent<Image>().sprite = BlankImage;
+                button.GetComponent<RawImage>().texture = BlankImage;
                 button.tag = "ClueCard";
                 team1Cards -= 1;
             }
@@ -215,12 +221,12 @@ public class GameManager : MonoBehaviour {
         // Team 2 Selection Turn
         else if (gameStep == 1) {
             if (button.tag == "ClueCard" && team2Cards < team2TotalCards) {
-                button.GetComponent<Image>().sprite = team2Image;
+                button.GetComponent<RawImage>().texture = team2Image;
                 button.tag = team2Tag;
                 team2Cards += 1;
             }
             else if (button.tag == team2Tag) {
-                button.GetComponent<Image>().sprite = BlankImage;
+                button.GetComponent<RawImage>().texture = BlankImage;
                 button.tag = "ClueCard";
                 team2Cards -= 1;
 
@@ -229,12 +235,12 @@ public class GameManager : MonoBehaviour {
         // Assassin Selection Turn
         else if (gameStep == 2) {
             if (button.tag == "ClueCard" && assassinTeamCards < 1) {
-                button.GetComponent<Image>().sprite = mantisImage;
+                button.GetComponent<RawImage>().texture = mantisImage;
                 button.tag = "Assassin";
                 assassinTeamCards += 1;
             }
             else if (button.tag == "Assassin") {
-                button.GetComponent<Image>().sprite = BlankImage;
+                button.GetComponent<RawImage>().texture = BlankImage;
                 button.tag = "ClueCard";
                 assassinTeamCards -= 1;
 
@@ -244,7 +250,8 @@ public class GameManager : MonoBehaviour {
         else if (gameStep == 3) {
             if (button.tag == team1Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().sprite = team1Image;
+                //set var
+                button.GetComponent<RawImage>().texture = team1Image;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team1Cards += 1;
                 if (team1Cards >= 9) {
@@ -253,14 +260,14 @@ public class GameManager : MonoBehaviour {
             }
             else if (button.tag == team2Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().sprite = team2Image;
+                button.GetComponent<RawImage>().texture = team2Image;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team2Cards += 1;
                 gameStep += 1;
             }
             else if (button.tag == "Assassin") {
                 button.tag = "tagged";
-                button.GetComponent<Image>().sprite = mantisImage;
+                button.GetComponent<RawImage>().texture = mantisImage;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 assassinTeamCards += 1;
                 GameOver("Aspis Consortium");
@@ -275,14 +282,14 @@ public class GameManager : MonoBehaviour {
         else if (gameStep == 4) {
             if (button.tag == team1Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().sprite = team1Image;
+                button.GetComponent<RawImage>().texture = team1Image;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team1Cards += 1;
                 gameStep -= 1;
             }
             else if (button.tag == team2Tag) {
                 button.tag = "tagged";
-                button.GetComponent<Image>().sprite = team2Image;
+                button.GetComponent<RawImage>().texture = team2Image;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team2Cards += 1;
                 if (team2Cards >= 8) {
@@ -291,7 +298,7 @@ public class GameManager : MonoBehaviour {
             }
             else if (button.tag == "Assassin") {
                 button.tag = "tagged";
-                button.GetComponent<Image>().sprite = mantisImage;
+                button.GetComponent<RawImage>().texture = mantisImage;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 assassinTeamCards += 1;
                 GameOver("Pathfinders");
@@ -306,6 +313,7 @@ public class GameManager : MonoBehaviour {
     private void GameOver(string winner) {
         gameWinner = winner;
         gameStep = 5;
+        Destroy(PlayerFire.gameObject);
         GameOverScreen.SetActive(true);
         GameOverScreen.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = "The " + gameWinner + " Wins!";
     }
@@ -315,7 +323,8 @@ public class GameManager : MonoBehaviour {
             gameStep = newgameStep;
         }
         else if (gameStep == 3 || gameStep == 4) {
-            gameStep = newgameStep + 3;
+            newgameStep = newgameStep + 3;
+            gameStep = newgameStep;
         }
         
     }
@@ -323,19 +332,40 @@ public class GameManager : MonoBehaviour {
     public void RollInitiative() {
         if (team1Cards >= 9 && team2Cards >= 8 && assassinTeamCards >= 1) {
             foreach (GameObject clue in clueObjects) {
-                clue.GetComponent<Image>().sprite = BlankImage;
+                clue.GetComponent<RawImage>().texture = BlankImage;
             }
             team1Cards = 0;
             team2Cards = 0;
             gameStep = 3;
             PopulateCards();
-            Destroy(GameObject.FindGameObjectWithTag("SelectionButton"));
+            EndTurnButton.SetActive(true);
+            FireLoc(3);
             Destroy(AssassinsIcon);
+            Destroy(InitativeButton);
         }  
     }
 
     public void EndTurn() {
         gameStep = (gameStep == 3 ? 4 : gameStep == 4 ? 3 : 3);
+    }
+
+    public void Menu() {
+        if (MenuScreen.activeSelf == false) {
+            MenuScreen.SetActive(true);
+        }
+        else MenuScreen.SetActive(false);
+    }
+
+    public void FireLoc(int loc){
+        if (loc == 0 || loc == 3){
+            PlayerFire.localPosition = new Vector3(-130, 1);
+        }
+        else if (loc == 1 || loc == 4) {
+            PlayerFire.localPosition = new Vector3(130, 1);
+        }
+        else if (loc == 2) {
+            PlayerFire.localPosition = new Vector3(0, 1);
+        }
     }
 
     /// <summary>
@@ -344,7 +374,7 @@ public class GameManager : MonoBehaviour {
     void PopulateCards() {
         foreach (GameObject clue in clueObjects) {
             int randomCard = UnityEngine.Random.Range(0, cluesText.Count);
-            clue.GetComponentInChildren<TMP_Text>().text = cluesText[randomCard];
+            clue.GetComponentInChildren<TextMeshProUGUI>().text = cluesText[randomCard];
             cluesText.RemoveAt(randomCard);
         }
     }
