@@ -8,8 +8,14 @@ using System;
 
 public class MenuController : MonoBehaviour {
 
+    public int levelIndex = 1;
+
+    public void SetLevel(int lvl) {
+        levelIndex = lvl;
+    }
+
     public void PlayGame() {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + levelIndex);
     }
 
     public void StartOver() {

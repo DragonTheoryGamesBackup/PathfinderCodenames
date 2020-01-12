@@ -144,6 +144,7 @@ public class GameManager : MonoBehaviour {
     // Start is called before the first frame update
     void Start()
     {
+        SetStage();
         SetTeams();
         gameStep = (int)TurnOrder.firstTeamSelect;
         cluesText = new List<string>(cluesTextOriginal); //create copy of all the clue cards so that originals are not altered
@@ -157,6 +158,13 @@ public class GameManager : MonoBehaviour {
         InfoTextBox.GetComponent<TextMeshProUGUI>().text = infoText;
         InfoText();
         FireLoc(gameStep);
+    }
+
+    private void SetStage() {
+        if (SceneManager.GetActiveScene().buildIndex == 2) {
+            team1TotalCards = 8;
+            team2TotalCards = 7;
+        }
     }
 
     private void SetTeams() {
@@ -254,9 +262,7 @@ public class GameManager : MonoBehaviour {
                 button.GetComponent<RawImage>().texture = team1Image;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team1Cards += 1;
-                if (team1Cards >= 9) {
-                    GameOver("Pathfinder Society");
-                }
+                IsGameOver();
             }
             else if (button.tag == team2Tag) {
                 button.tag = "tagged";
@@ -264,13 +270,14 @@ public class GameManager : MonoBehaviour {
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team2Cards += 1;
                 gameStep += 1;
+                IsGameOver();
             }
             else if (button.tag == "Assassin") {
                 button.tag = "tagged";
                 button.GetComponent<RawImage>().texture = mantisImage;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 assassinTeamCards += 1;
-                GameOver("Aspis Consortium");
+                GameOver(team2Tag);
             }
 
             else if (button.tag == "ClueCard") {
@@ -286,28 +293,37 @@ public class GameManager : MonoBehaviour {
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team1Cards += 1;
                 gameStep -= 1;
+                IsGameOver();
             }
             else if (button.tag == team2Tag) {
                 button.tag = "tagged";
                 button.GetComponent<RawImage>().texture = team2Image;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 team2Cards += 1;
-                if (team2Cards >= 8) {
-                    GameOver("Aspis Consortium");
-                }
+                IsGameOver();
             }
             else if (button.tag == "Assassin") {
                 button.tag = "tagged";
                 button.GetComponent<RawImage>().texture = mantisImage;
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 assassinTeamCards += 1;
-                GameOver("Pathfinders");
+                GameOver(team1Tag);
             }
             else if (button.tag == "ClueCard") {
                 button.GetComponentInChildren<TMP_Text>().text = "";
                 gameStep -= 1;
             }
         }
+    }
+
+    void IsGameOver() {
+        if (team1Cards >= team1TotalCards) {
+            GameOver(team1Tag);
+        }
+        else if (team2Cards >= team2TotalCards) {
+            GameOver(team2Tag);
+        }
+
     }
 
     private void GameOver(string winner) {
@@ -330,7 +346,7 @@ public class GameManager : MonoBehaviour {
     }
 
     public void RollInitiative() {
-        if (team1Cards >= 9 && team2Cards >= 8 && assassinTeamCards >= 1) {
+        if (team1Cards >= team1TotalCards && team2Cards >= team2TotalCards && assassinTeamCards >= 1) {
             foreach (GameObject clue in clueObjects) {
                 clue.GetComponent<RawImage>().texture = BlankImage;
             }
